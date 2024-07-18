@@ -1,1 +1,65 @@
+import cv2
+import mediapipe as mp
+import pyautogui
+
+# Initialize camera, face mesh, and screen dimensions
+cam = cv2.VideoCapture(0)
+face_mesh = mp.solutions.face_mesh.FaceMesh(refine_landmarks=True)
+screen_w, screen_h = pyautogui.size()
+
+while True:
+    # Capture frame-by-frame
+    ret, frame = cam.read()
+    frame = cv2.flip(frame, 1)
+    if not ret:
+        print("Failed to capture frame")
+        break
+
+    # Convert frame to RGB and process with face mesh
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    output = face_mesh.process(rgb_frame)
+    landmarks_points = output.multi_face_landmarks
+
+    if landmarks_points:
+        landmarks = landmarks_points[0].landmark
+
+        # Draw circles on specific landmarks and move mouse
+        for id, landmark in enumerate(landmarks[474:478]):
+            x = int(landmark.x * frame.shape[1])
+            y = int(landmark.y * frame.shape[0])
+            cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
+            if id == 1:
+                screen_x = screen_w / frame.shape[1] * x
+                screen_y = screen_h / frame.shape[0] * y
+                pyautogui.moveTo(screen_x, screen_y)
+
+        left = []
+        right = []
+        for id, landmark in enumerate(landmarks):
+            if id == 145:
+                x = int(landmark.x * frame.shape[1])
+                y = int(landmark.y * frame.shape[0])
+                cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
+                left.append(landmark.y)
+            elif id == 159:
+                x = int(landmark.x * frame.shape[1])
+                y = int(landmark.y * frame.shape[0])
+                cv2.circle(frame, (x, y), 3, (255, 0, 255), -1)
+                right.append(landmark.y)
+
+        if left and right:
+            if left[0] - right[0] < 0.004:
+                pyautogui.click()
+                pyautogui.sleep(1)
+
+    # Display the frame with annotations
+    cv2.imshow('My eye controlled mouse', frame)
+
+    # Exit loop when Esc key is pressed
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
+
+# Release the camera and close all OpenCV windows
+
+
 
