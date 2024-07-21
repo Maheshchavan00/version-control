@@ -59,7 +59,6 @@ while True:
     if cv2.waitKey(1) & 0xFF == 27:
         break
 
-# Release the camera and close all OpenCV windows
 
 
 
